@@ -1,0 +1,277 @@
+:root {
+  --bg: rgb(138, 139, 141);
+  --card: rgb(255, 255, 255);
+  --ink: rgb(15, 23, 42);
+  --muted: rgb(101, 117, 139);
+  --line: rgb(226, 232, 240);
+  --btn: rgb(241, 245, 249);
+  --btn-hover: rgb(226, 232, 240);
+  --accent: rgb(79, 70, 229);
+  --accent-hover: rgb(67, 56, 202);
+  --danger: rgb(239, 68, 68);
+  --ok: rgb(16, 185, 129);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, Segoe UI, Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 28px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.card.wide {
+  max-width: 860px;
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-size: 22px;
+  text-align: center;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  color: inherit;
+  background: #fff;
+}
+
+textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--btn);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 9px 14px;
+  transition: 0.15s ease;
+}
+
+button:hover {
+  background: var(--btn-hover);
+}
+
+button.block, button.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+button.block {
+  width: 100%;
+}
+
+button.block:hover, button.primary:hover {
+  background: var(--accent-hover);
+}
+
+button.danger {
+  color: var(--danger);
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+button.danger:hover {
+  background: #fee2e2;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.switch {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 16px;
+}
+
+.switch a, .linkbtn {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.switch a:hover, .linkbtn:hover {
+  text-decoration: underline;
+}
+
+.linkbtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.tabs button {
+  flex: 1;
+}
+
+.tabs button.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.msg {
+  min-height: 20px;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.msg.error {
+  color: var(--danger);
+}
+
+.msg.ok {
+  color: var(--ok);
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+  margin: -6px 0 12px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th, td {
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: #f8fafc;
+  font-weight: 600;
+}
+
+td.actions {
+  white-space: nowrap;
+}
+
+td.actions button {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+td.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 24px;
+}
+
+dialog {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  width: min(480px, 92vw);
+}
+
+dialog::backdrop {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+dialog h2 {
+  margin: 0 0 14px;
+  font-size: 18px;
+}
+
+dialog .meta {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+dialog .view-text {
+  white-space: pre-wrap;
+  margin-bottom: 16px;
+}
+
+dialog .row {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 520px) {
+  .card {
+    padding: 20px;
+  }
+}

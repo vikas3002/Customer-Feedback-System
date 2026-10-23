@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Feedback</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="card" style="max-width: 460px">
+    <h1>Feedback</h1>
+    <div class="tabs" role="tablist">
+      <button id="tab-add" role="tab" class="active">Add Feedback</button>
+      <button id="tab-edit" role="tab">Edit Feedback</button>
+    </div>
+    <form id="form" novalidate>
+      <label for="text">Your Feedback:</label>
+      <textarea id="text" maxlength="5000" placeholder="Write your feedback here..."></textarea>
+      <p id="hint" class="hint"></p>
+      <p id="msg" class="msg" role="alert"></p>
+      <button id="submit" class="block" type="submit">Submit</button>
+    </form>
+    <div class="topbar">
+      <span id="who"></span>
+      <button class="linkbtn" id="logout">Log Out</button>
+    </div>
+  </main>
+
+  <script src="/app.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let existing = null;
+    let mode = "add";
+
+    function setMode(m) {
+      mode = m;
+      $("tab-add").classList.toggle("active", m === "add");
+      $("tab-edit").classList.toggle("active", m === "edit");
+      setMsg($("msg"), "");
+
+      const isAdd = m === "add";
+      const hasFeedback = Boolean(existing);
+      const disabled = (isAdd && hasFeedback) || (!isAdd && !hasFeedback);
+
+      $("text").disabled = disabled;
+      $("submit").disabled = disabled;
+      $("text").value = (!isAdd && existing) ? existing.text : "";
+      $("submit").textContent = isAdd ? "Submit" : "Save changes";
+
+      if (isAdd) {
+        $("hint").textContent = hasFeedback
+          ? "You already submitted feedback. Switch to Edit Feedback to change it."
+          : "";
+      } else {
+        $("hint").textContent = hasFeedback
+          ? "Last updated " + fmtDate(existing.updated_at) + "."
+          : "You have no feedback to edit yet. Switch to Add Feedback to submit one.";
+      }
+    }
+
+    $("tab-add").onclick = () => setMode("add");
+    $("tab-edit").onclick = () => setMode("edit");
+    $("logout").onclick = logout;
+
+    $("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = $("text").value.trim();
+      if (!text) return setMsg($("msg"), "Write some feedback before submitting.", "error");
+
+      try {
+        const isNew = mode === "add";
+        const res = isNew
+          ? await api("/api/feedback", "POST", { text })
+          : await api("/api/feedback/mine", "PUT", { text });
+
+        existing = res.feedback;
+        setMode("edit");
+        setMsg($("msg"), isNew ? "Feedback submitted. Thank you!" : "Changes saved.", "ok");
+      } catch (err) {
+        setMsg($("msg"), err.message, "error");
+      }
+    });
+
+    (async () => {
+      const me = await requireRole("user");
+      if (!me) return;
+      $("who").textContent = "Signed in as " + me.username;
+      existing = (await api("/api/feedback/mine")).feedback;
+      setMode(existing ? "edit" : "add");
+    })();
+  </script>
+</body>
+</html>

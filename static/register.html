@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register · Customer Feedback</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="card">
+    <h1>Register</h1>
+    <form id="form" novalidate>
+      <input id="username" placeholder="Username" autocomplete="username" aria-label="Username" required>
+      <input id="email" type="email" placeholder="Email" autocomplete="email" aria-label="Email" required>
+      <input id="password" type="password" placeholder="Password" autocomplete="new-password" aria-label="Password" required>
+      <input id="confirm" type="password" placeholder="Confirm Password" autocomplete="new-password" aria-label="Confirm Password" required>
+      <p id="msg" class="msg" role="alert"></p>
+      <button class="block" type="submit">Sign Up</button>
+    </form>
+    <p class="switch">Already have an account? <a href="/login.html">Log In</a></p>
+  </main>
+
+  <script src="/app.js"></script>
+  <script>
+    const msg = document.getElementById("msg");
+
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const body = {
+        username: document.getElementById("username").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        password: document.getElementById("password").value,
+        confirm_password: document.getElementById("confirm").value,
+      };
+
+      if (!body.username || !body.email || !body.password) {
+        return setMsg(msg, "Fill in every field.", "error");
+      }
+      if (body.password !== body.confirm_password) {
+        return setMsg(msg, "Passwords do not match.", "error");
+      }
+
+      try {
+        await api("/api/register", "POST", body);
+        setMsg(msg, "Account created. Redirecting to log in…", "ok");
+        setTimeout(() => location.replace("/login.html"), 900);
+      } catch (err) {
+        setMsg(msg, err.message, "error");
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin  Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="card wide">
+    <h1>Admin Feedback Dashboard</h1>
+    <div class="toolbar">
+      <button id="add">Add feedback</button>
+    </div>
+    <p id="msg" class="msg" role="alert"></p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Feedback</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="topbar">
+      <span id="who"></span>
+      <button class="linkbtn" id="logout">Log Out</button>
+    </div>
+  </main>
+
+  <dialog id="dlg">
+    <h2 id="dlg-title"></h2>
+    <p id="dlg-meta" class="meta"></p>
+    <p id="dlg-view" class="view-text" hidden></p>
+    <form id="dlg-form" novalidate hidden>
+      <label for="dlg-text">Feedback</label>
+      <textarea id="dlg-text" maxlength="5000"></textarea>
+    </form>
+    <p id="dlg-msg" class="msg" role="alert"></p>
+    <div class="row">
+      <button id="dlg-cancel" type="button">Close</button>
+      <button id="dlg-save" class="primary" type="button" hidden>Save changes</button>
+    </div>
+  </dialog>
+
+  <script src="/app.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const dlg = $("dlg");
+    let editingId = null;
+
+    function openDialog({ title, meta, text, editable, id }) {
+      editingId = id ?? null;
+      $("dlg-title").textContent = title;
+      $("dlg-meta").textContent = meta || "";
+
+      $("dlg-view").hidden = editable;
+      $("dlg-view").textContent = text || "";
+
+      $("dlg-form").hidden = !editable;
+      $("dlg-text").value = text || "";
+
+      $("dlg-save").hidden = !editable;
+      $("dlg-save").textContent = id ? "Save changes" : "Add feedback";
+
+      setMsg($("dlg-msg"), "");
+      dlg.showModal();
+      if (editable) $("dlg-text").focus();
+    }
+
+    function createCell(text, className) {
+      const cell = document.createElement("td");
+      cell.textContent = text;
+      if (className) cell.className = className;
+      return cell;
+    }
+
+    function createButton(label, onClick, className) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = label;
+      if (className) btn.className = className;
+      btn.onclick = onClick;
+      return btn;
+    }
+
+    async function loadFeedback() {
+      const { items } = await api("/api/admin/feedback");
+      const tbody = $("rows");
+      tbody.innerHTML = "";
+
+      if (!items.length) {
+        const tr = document.createElement("tr");
+        const td = createCell("No feedback yet.", "empty");
+        td.colSpan = 5;
+        tr.append(td);
+        tbody.append(tr);
+        return;
+      }
+
+      for (const item of items) {
+        const tr = document.createElement("tr");
+        const actionsTd = document.createElement("td");
+        actionsTd.className = "actions";
+
+        const viewBtn = createButton("View", () => {
+          openDialog({
+            title: `Feedback #${item.id}`,
+            meta: `${item.username} · ${fmtDate(item.created_at)}`,
+            text: item.text,
+            editable: false
+          });
+        });
+
+        const editBtn = createButton("Edit", () => {
+          openDialog({
+            title: `Edit feedback #${item.id}`,
+            meta: `${item.username} · ${fmtDate(item.created_at)}`,
+            text: item.text,
+            editable: true,
+            id: item.id
+          });
+        });
+
+        const deleteBtn = createButton("Delete", async () => {
+          if (!confirm(`Delete feedback #${item.id} from ${item.username}?`)) return;
+          try {
+            await api(`/api/admin/feedback/${item.id}`, "DELETE");
+            setMsg($("msg"), "Feedback deleted.", "ok");
+            await loadFeedback();
+          } catch (err) {
+            setMsg($("msg"), err.message, "error");
+          }
+        }, "danger");
+
+        actionsTd.append(viewBtn, " ", editBtn, " ", deleteBtn);
+        tr.append(
+          createCell(item.id),
+          createCell(item.username),
+          createCell(item.text),
+          createCell(fmtDate(item.created_at)),
+          actionsTd
+        );
+        tbody.append(tr);
+      }
+    }
+
+    $("add").onclick = () => {
+      openDialog({
+        title: "Add feedback",
+        meta: "Saved under your admin account.",
+        text: "",
+        editable: true
+      });
+    };
+
+    $("dlg-cancel").onclick = () => dlg.close();
+
+    $("dlg-save").onclick = async () => {
+      const text = $("dlg-text").value.trim();
+      if (!text) return setMsg($("dlg-msg"), "Feedback cannot be empty.", "error");
+
+      try {
+        if (editingId) {
+          await api(`/api/admin/feedback/${editingId}`, "PUT", { text });
+        } else {
+          await api("/api/admin/feedback", "POST", { text });
+        }
+        dlg.close();
+        setMsg($("msg"), editingId ? "Changes saved." : "Feedback added.", "ok");
+        await loadFeedback();
+      } catch (err) {
+        setMsg($("dlg-msg"), err.message, "error");
+      }
+    };
+
+    $("logout").onclick = logout;
+
+    (async () => {
+      const me = await requireRole("admin");
+      if (!me) return;
+      $("who").textContent = "Signed in as " + me.username;
+      try {
+        await loadFeedback();
+      } catch (err) {
+        setMsg($("msg"), err.message, "error");
+      }
+    })();
+  </script>
+</body>
+</html>
